@@ -6,6 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Calculator } from "lucide-react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts"
 
 export function Secante() {
   const [equation, setEquation] = useState("x^3 - x - 2")
@@ -80,6 +91,27 @@ export function Secante() {
       setResult(null)
       setIterations([])
     }
+  }
+
+  const generateGraphData = (root: number) => {
+    const points = []
+    const range = Math.max(Math.abs(x1 - x0) * 2, 2)
+    const center = root
+    const start = center - range
+    const end = center + range
+    const step = (end - start) / 100
+
+    for (let x = start; x <= end; x += step) {
+      try {
+        const y = evaluateFunction(x)
+        if (Math.abs(y) < 1000) {
+          points.push({ x: Number(x.toFixed(4)), y: Number(y.toFixed(4)) })
+        }
+      } catch (e) {
+        // Skip invalid points
+      }
+    }
+    return points
   }
 
   return (
@@ -170,6 +202,42 @@ export function Secante() {
             <p className="text-sm text-muted-foreground">x ≈</p>
             <p className="text-4xl font-bold text-foreground">{result.toFixed(8)}</p>
             <p className="mt-2 text-sm text-muted-foreground">f(x) ≈ {evaluateFunction(result).toFixed(8)}</p>
+          </div>
+
+          <div className="mb-6 rounded-lg bg-background p-4">
+            <h4 className="mb-3 font-semibold text-foreground">Gráfica de la Función</h4>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={generateGraphData(result)}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis
+                  dataKey="x"
+                  label={{ value: "x", position: "insideBottomRight", offset: -5 }}
+                  className="text-xs"
+                />
+                <YAxis label={{ value: "f(x)", angle: -90, position: "insideLeft" }} className="text-xs" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--background))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "6px",
+                  }}
+                />
+                <Legend />
+                <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
+                <ReferenceLine x={result} stroke="hsl(var(--accent))" strokeDasharray="5 5" label="Raíz" />
+                <Line
+                  type="monotone"
+                  dataKey="y"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={false}
+                  name="f(x)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              La línea vertical punteada marca la raíz encontrada en x ≈ {result.toFixed(4)}
+            </p>
           </div>
 
           {iterations.length > 0 && (

@@ -46,7 +46,7 @@ export function NewtonRaphsonModificado() {
       const varNames = ["x", "y", "z", "w"]
 
       for (let i = 0; i < vars.length; i++) {
-        const regex = new RegExp(varNames[i], "g")
+        const regex = new RegExp(`\\b${varNames[i]}\\b`, "g")
         expression = expression.replace(regex, `(${vars[i]})`)
       }
 
